@@ -150,6 +150,13 @@ button:disabled{opacity:.45; pointer-events:none;}
 .show .s-em{font-size:80px; width:128px; height:128px; border-radius:50%; background:var(--c); display:grid; place-items:center; line-height:1;}
 .show .s-t{font-size:23px; font-weight:900; line-height:1.15;}
 .s-meta{font-size:16px; color:var(--ink2); display:flex; align-items:center; gap:8px; flex-wrap:wrap; justify-content:center;}
+.show .s-em.has-art{width:100%; height:auto; aspect-ratio:16/9; border-radius:20px; background-size:cover; background-position:center; position:relative; font-size:0;}
+.show .s-em.has-art i{position:absolute; right:8px; bottom:8px; width:48px; height:48px; border-radius:50%; background:rgba(15,12,40,.6); display:grid; place-items:center; font-size:28px; font-style:normal;}
+.s-art{width:100%; max-width:440px; aspect-ratio:16/9; border-radius:22px; background-size:cover; background-position:center; box-shadow:0 8px 0 rgba(0,0,0,.25);}
+.showrow .se img{width:44px; height:44px; object-fit:cover; border-radius:10px; display:block;}
+.tabs{display:flex; gap:8px; overflow-x:auto; width:100%; max-width:860px; padding:2px 2px 8px; -webkit-overflow-scrolling:touch; scrollbar-width:none;}
+.tab{flex:none; padding:10px 18px; border-radius:999px; background:var(--card); color:var(--ink2); font-weight:800; font-size:16px;}
+.tab.on{background:var(--gold); color:var(--gold-ink);}
 .pill{display:inline-block; padding:4px 12px; border-radius:999px; font-size:15px; font-weight:800; color:#fff; white-space:nowrap;}
 .dose{position:sticky; bottom:calc(10px + env(safe-area-inset-bottom)); width:100%; max-width:760px; background:var(--card2); border-radius:34px; padding:22px;
   display:flex; flex-direction:column; align-items:center; gap:10px; box-shadow:0 -6px 30px rgba(0,0,0,.35); animation:up .3s ease; z-index:5;}
@@ -256,6 +263,7 @@ a.link{color:var(--gold);}
      l      links by service (opens the show in that service's app)
      lang   'fr' for French-language entries       ytId YouTube channel id (in-app player)
      why    note for parents      note  caution for parents
+     q      search words for the show picture (optional)
    Links were checked against JustWatch Canada and the services in Nov 2026.
    Availability changes, so recheck now and then.
    ===================================================================== */
@@ -264,7 +272,7 @@ const VERSION = '1.0';
 const PLATFORMS = {
   netflix:    { name: 'Netflix',     color: '#E50914', home: 'https://www.netflix.com/',         search: 'https://www.netflix.com/search?q={q}',               def: true,  note: '' },
   disney:     { name: 'Disney+',     color: '#1F3FBF', home: 'https://www.disneyplus.com/en-ca', search: '',                                                    def: true,  note: '' },
-  prime:      { name: 'Prime Video', color: '#1A98FF', home: 'https://www.primevideo.com/',      search: 'https://www.primevideo.com/search/?phrase={q}',      def: true,  note: '' },
+  prime:      { name: 'Prime Video', color: '#1A98FF', home: 'https://app.primevideo.com/',      search: 'https://app.primevideo.com/search/?phrase={q}',      def: true,  note: '' },
   crave:      { name: 'Crave',       color: '#2563EB', home: 'https://www.crave.ca/en',          search: '',                                                    def: true,  note: '' },
   telequebec: { name: 'Télé-Québec', color: '#0EA5E9', home: 'https://www.telequebec.tv/',       search: '',                                                    def: true,  note: 'Free, French' },
   youtube:    { name: 'YouTube',     color: '#FF0033', home: 'https://www.youtube.com/',         search: 'https://www.youtube.com/results?search_query={q}',   def: true,  note: '' },
@@ -289,8 +297,8 @@ const PACE = { 1: 'calm', 2: 'medium', 3: 'busy' };
 
 const SHOWS = [
   /* ---------- Feelings ---------- */
-  { id: 'daniel-tiger', t: "Daniel Tiger's Neighbourhood", e: '🐯', th: ['feelings', 'cozy'], a: [2, 5], p: 1, m: 23,
-    l: { prime: 'https://www.primevideo.com/detail?gti=amzn1.dv.gti.52ba1149-9ea4-f71a-d587-0884888a1dd8' },
+  { id: 'daniel-tiger', q: "Daniel Tiger's Neighborhood", t: "Daniel Tiger's Neighbourhood", e: '🐯', th: ['feelings', 'cozy'], a: [2, 5], p: 1, m: 23,
+    l: { prime: 'https://app.primevideo.com/detail?gti=amzn1.dv.gti.52ba1149-9ea4-f71a-d587-0884888a1dd8' },
     why: 'Short songs give kids a plan for big feelings. Research found more empathy in kids who watched it and talked about it with a parent.' },
   { id: 'bluey', t: 'Bluey', e: '🐶', th: ['feelings'], a: [3, 8], p: 2, m: 7,
     l: { disney: 'https://www.disneyplus.com/browse/entity-deb3781c-9bfe-43a8-b82d-4b3d6b0a9cae' },
@@ -305,16 +313,16 @@ const SHOWS = [
     l: { netflix: 'https://www.netflix.com/title/80989192' },
     why: 'Earn-a-badge stories about kindness and trying new things. Brisk but warm.' },
   { id: 'bing', t: 'Bing', e: '🐰', th: ['feelings', 'cozy'], a: [2, 5], p: 1, m: 7,
-    l: { prime: 'https://www.primevideo.com/detail?gti=amzn1.dv.gti.86bb9235-7328-d0d7-b5a2-5a4db282d7ba' },
+    l: { prime: 'https://app.primevideo.com/detail?gti=amzn1.dv.gti.86bb9235-7328-d0d7-b5a2-5a4db282d7ba' },
     why: 'Small toddler moments (sharing, waiting, losing a toy) with a calm grown-up who names the feeling.' },
-  { id: 'mister-rogers', t: "Mister Rogers' Neighborhood", e: '👟', th: ['feelings', 'cozy'], a: [3, 6], p: 1, m: 28,
-    l: { prime: 'https://www.primevideo.com/detail?gti=amzn1.dv.gti.a6b766e2-7035-9f75-4746-ef27536f9cbf' },
+  { id: 'mister-rogers', q: "Mister Rogers' Neighborhood", t: "Mister Rogers' Neighborhood", e: '👟', th: ['feelings', 'cozy'], a: [3, 6], p: 1, m: 28,
+    l: { prime: 'https://app.primevideo.com/detail?gti=amzn1.dv.gti.a6b766e2-7035-9f75-4746-ef27536f9cbf' },
     why: 'The original slow show. Talks straight to kids about feelings and fears.' },
-  { id: 'arthur', t: 'Arthur', e: '👓', th: ['feelings'], a: [4, 8], p: 1, m: 20,
-    l: { prime: 'https://www.primevideo.com/detail?gti=amzn1.dv.gti.b3805bf5-2a82-4e34-8c66-6fcdffeef52d' },
+  { id: 'arthur', q: 'Arthur', t: 'Arthur', e: '👓', th: ['feelings'], a: [4, 8], p: 1, m: 20,
+    l: { prime: 'https://app.primevideo.com/detail?gti=amzn1.dv.gti.b3805bf5-2a82-4e34-8c66-6fcdffeef52d' },
     why: 'Everyday school and family problems, told kindly. Good for talking about fairness.' },
   { id: 'charlie-lola', t: 'Charlie and Lola', e: '👧', th: ['feelings', 'cozy'], a: [3, 6], p: 1, m: 11,
-    l: { prime: 'https://www.primevideo.com/detail?gti=amzn1.dv.gti.b34d69dd-2339-4df3-a23b-e8e893e994f6' },
+    l: { prime: 'https://app.primevideo.com/detail?gti=amzn1.dv.gti.b34d69dd-2339-4df3-a23b-e8e893e994f6' },
     why: 'A patient big brother helps his little sister with picky eating, bedtime and new things.' },
   { id: 'doc-mcstuffins', t: 'Doc McStuffins', e: '🩺', th: ['feelings'], a: [3, 6], p: 2, m: 21,
     l: { disney: 'https://www.disneyplus.com/browse/entity-e15b6aef-e835-4096-9824-bb00b0f06d68' },
@@ -334,20 +342,20 @@ const SHOWS = [
   { id: 'franklin', t: 'Franklin and Friends', e: '🐢', th: ['feelings'], a: [3, 6], p: 1, m: 22,
     l: { tubi: 'https://tubitv.com/series/300023611/franklin-and-friends' },
     why: 'A Canadian classic about friendship, honesty and saying sorry.' },
-  { id: 'nutbrown', t: 'Guess How Much I Love You', e: '🐇', th: ['feelings', 'nature', 'cozy'], a: [2, 5], p: 1, m: 11,
+  { id: 'nutbrown', q: 'Guess How Much I Love You', t: 'Guess How Much I Love You', e: '🐇', th: ['feelings', 'nature', 'cozy'], a: [2, 5], p: 1, m: 11,
     l: { tubi: 'https://tubitv.com/series/4669/guess-how-much-i-love-you-the-adventures-of-little-nutbrown-hare' },
     why: 'Little Nutbrown Hare explores the meadow. Soft and slow.' },
   { id: 'kiri-lou', t: 'Kiri and Lou', e: '🦖', th: ['feelings', 'cozy'], a: [3, 6], p: 1, m: 5,
     l: { youtube: 'https://www.youtube.com/@KiriandLou' },
     why: 'Clay animation from New Zealand, all about naming feelings.' },
-  { id: 'ms-rachel', t: 'Ms Rachel', e: '🎵', th: ['numbers', 'feelings'], a: [2, 4], p: 1, m: 45,
+  { id: 'ms-rachel', q: 'Ms. Rachel', t: 'Ms Rachel', e: '🎵', th: ['numbers', 'feelings'], a: [2, 4], p: 1, m: 45,
     l: { netflix: 'https://www.netflix.com/title/81975233', youtube: 'https://www.youtube.com/@msrachel' },
     why: 'Speech and language songs for little ones. Best for the youngest.' },
   { id: 'paw-patrol', t: 'PAW Patrol', tf: "La Pat' Patrouille", e: '🐾', th: ['feelings'], a: [3, 6], p: 3, m: 19,
-    l: { netflix: 'https://www.netflix.com/title/80026226', prime: 'https://www.primevideo.com/detail?gti=amzn1.dv.gti.9020464c-996c-4a55-bbcf-8dcf370d4d8a' },
+    l: { netflix: 'https://www.netflix.com/title/80026226', prime: 'https://app.primevideo.com/detail?gti=amzn1.dv.gti.9020464c-996c-4a55-bbcf-8dcf370d4d8a' },
     why: 'Teamwork and helping out.', note: 'Fast and toy-driven; often listed as high-stimulation.' },
   { id: 'masha', t: 'Masha and the Bear', tf: 'Masha et Michka', e: '🐻', th: ['feelings'], a: [3, 6], p: 3, m: 7,
-    l: { netflix: 'https://www.netflix.com/title/70286901', prime: 'https://www.primevideo.com/detail?gti=amzn1.dv.gti.30bae5cc-519f-4b46-a4b2-5dc18510e94b' },
+    l: { netflix: 'https://www.netflix.com/title/70286901', prime: 'https://app.primevideo.com/detail?gti=amzn1.dv.gti.30bae5cc-519f-4b46-a4b2-5dc18510e94b' },
     why: 'Slapstick with a very patient bear.', note: 'Fast and loud; Masha models a lot of what not to do.' },
 
   /* ---------- Curious minds ---------- */
@@ -357,7 +365,7 @@ const SHOWS = [
   { id: 'ada-twist', t: 'Ada Twist, Scientist', e: '🧪', th: ['curious'], a: [4, 7], p: 2, m: 24,
     l: { netflix: 'https://www.netflix.com/title/80198673' },
     why: 'A girl who asks why, then tests it. The scientific method, made fun.' },
-  { id: 'storybots', t: 'Ask the StoryBots', e: '🤖', th: ['curious'], a: [4, 8], p: 3, m: 26,
+  { id: 'storybots', q: 'Ask the StoryBots', t: 'Ask the StoryBots', e: '🤖', th: ['curious'], a: [4, 8], p: 3, m: 26,
     l: { netflix: 'https://www.netflix.com/title/80108159' },
     why: 'Big kid questions (why is the sky blue?) answered with songs.', note: 'Fast and musical.' },
   { id: 'storybots-answer', t: 'StoryBots: Answer Time', e: '❓', th: ['curious', 'numbers'], a: [4, 8], p: 3, m: 23,
@@ -366,7 +374,7 @@ const SHOWS = [
   { id: 'brainchild', t: 'Brainchild', e: '🧠', th: ['curious'], a: [7, 12], p: 3, m: 24,
     l: { netflix: 'https://www.netflix.com/title/80215086' },
     why: 'The science of the brain, feelings and more, for big kids.', note: 'Aimed at 8 and up.' },
-  { id: 'octonauts', t: 'Octonauts', tf: 'Les Octonautes', e: '🐙', th: ['curious', 'nature'], a: [3, 7], p: 2, m: 14,
+  { id: 'octonauts', q: 'Octonauts', t: 'Octonauts', tf: 'Les Octonautes', e: '🐙', th: ['curious', 'nature'], a: [3, 7], p: 2, m: 14,
     l: { netflix: 'https://www.netflix.com/title/80020935' },
     why: 'Ocean rescues, each starring a real sea creature.' },
   { id: 'emilys-lab', t: "Emily's Wonder Lab", e: '🔬', th: ['curious', 'move'], a: [4, 7], p: 2, m: 13,
@@ -379,7 +387,7 @@ const SHOWS = [
     l: { netflix: 'https://www.netflix.com/title/81035680' },
     why: 'Cooking and where food comes from. Great before snack time.' },
   { id: 'tumble-leaf', t: 'Tumble Leaf', e: '🍃', th: ['curious', 'cozy'], a: [2, 5], p: 1, m: 23,
-    l: { prime: 'https://www.primevideo.com/detail?gti=amzn1.dv.gti.52a52322-0b3d-4a00-b09b-e294df9c7bad' },
+    l: { prime: 'https://app.primevideo.com/detail?gti=amzn1.dv.gti.52a52322-0b3d-4a00-b09b-e294df9c7bad' },
     why: 'Stop-motion science through play: ramps, magnets, shadows. Very calm.' },
   { id: 'doug-unplugs', t: 'Doug Unplugs', e: '🔌', th: ['curious', 'feelings'], a: [4, 7], p: 1, m: 24,
     l: { appletv: 'https://tv.apple.com/ca/episode/a-whole-bot-of-fun--volunteer-bot/umc.cmc.hmcesm5hueb9tw5jwfhv3q7o?playableId=tvs.sbd.4000%3AVDOUG0560101&showId=umc.cmc.3oxevpgaoqomu820s0e70ri75' },
@@ -431,10 +439,10 @@ const SHOWS = [
     l: { youtube: 'https://www.youtube.com/@officialalphablocks' },
     why: 'Letters that make sounds together. Early phonics.' },
   { id: 'odd-squad', t: 'Odd Squad', e: '🕵️', th: ['numbers', 'curious'], a: [5, 9], p: 2, m: 20,
-    l: { netflix: 'https://www.netflix.com/title/80062985', prime: 'https://www.primevideo.com/detail?gti=amzn1.dv.gti.1dd5127e-1733-486d-9c0e-fde62b9076e6' },
+    l: { netflix: 'https://www.netflix.com/title/80062985', prime: 'https://app.primevideo.com/detail?gti=amzn1.dv.gti.1dd5127e-1733-486d-9c0e-fde62b9076e6' },
     why: 'Kid agents solve weird problems with math. Made in Toronto.' },
   { id: 'peg-cat', t: 'Peg + Cat', e: '🐱', th: ['numbers'], a: [3, 6], p: 2, m: 25,
-    l: { prime: 'https://www.primevideo.com/detail?gti=amzn1.dv.gti.80b9999f-e0dc-e64c-54d8-244e0a462f08' },
+    l: { prime: 'https://app.primevideo.com/detail?gti=amzn1.dv.gti.80b9999f-e0dc-e64c-54d8-244e0a462f08' },
     why: 'Math problem-solving, and how to calm down when you feel stuck.' },
   { id: 'sesame-street', t: 'Sesame Street', e: '🏘️', th: ['numbers', 'feelings'], a: [2, 5], p: 2, m: 30, ytId: 'UCoookXUzPciGrEZEXmh4Jjg',
     l: { netflix: 'https://www.netflix.com/title/83075543', crave: 'https://www.crave.ca/en/play/sesame-street/community-mural-s53e1-2911505', youtube: 'https://www.youtube.com/@sesamestreet' },
@@ -442,7 +450,7 @@ const SHOWS = [
 
   /* ---------- Calm & cozy ---------- */
   { id: 'pocoyo', t: 'Pocoyo', e: '👶', th: ['cozy'], a: [2, 4], p: 1, m: 8,
-    l: { prime: 'https://www.primevideo.com/detail?gti=amzn1.dv.gti.b4afb864-086e-ab4e-aae5-0691657a0f54', youtube: 'https://www.youtube.com/@PocoyoEnglish' },
+    l: { prime: 'https://app.primevideo.com/detail?gti=amzn1.dv.gti.b4afb864-086e-ab4e-aae5-0691657a0f54', youtube: 'https://www.youtube.com/@PocoyoEnglish' },
     why: 'Simple, calm, lots of white space. Great for the youngest.' },
   { id: 'timmy-time', t: 'Timmy Time', e: '🐑', th: ['cozy', 'feelings'], a: [2, 5], p: 1, m: 10,
     l: { tubi: 'https://tubitv.com/series/300010497/timmy-time' },
@@ -466,28 +474,28 @@ const SHOWS = [
   { id: 'passe-partout', t: 'Passe-Partout', e: '🗝️', lang: 'fr', th: ['french', 'feelings'], a: [3, 6], p: 1, m: 20,
     l: { telequebec: 'https://telequebec.tv/regarder/passe-partout/1/1' },
     why: 'The Quebec classic, remade in 2019: routines, feelings and respect.' },
-  { id: 'bluey-fr', t: 'Bluey (en français)', e: '🐶', lang: 'fr', th: ['french'], a: [3, 8], p: 2, m: 7,
+  { id: 'bluey-fr', q: 'Bluey', t: 'Bluey (en français)', e: '🐶', lang: 'fr', th: ['french'], a: [3, 8], p: 2, m: 7,
     l: { telequebec: 'https://telequebec.tv/regarder/bluey/1/21' },
     why: 'Bluey in French, free on Télé-Québec.' },
-  { id: 'duggee-fr', t: 'Hé! Oua Oua', e: '🏅', lang: 'fr', th: ['french'], a: [3, 6], p: 2, m: 7,
+  { id: 'duggee-fr', q: 'Hey Duggee', t: 'Hé! Oua Oua', e: '🏅', lang: 'fr', th: ['french'], a: [3, 6], p: 2, m: 7,
     l: { telequebec: 'https://telequebec.tv/regarder/he-oua-oua/1/1' },
     why: 'Hey Duggee in French.' },
-  { id: 'bing-fr', t: 'Bing (en français)', e: '🐰', lang: 'fr', th: ['french', 'cozy'], a: [2, 5], p: 1, m: 7,
+  { id: 'bing-fr', q: 'Bing', t: 'Bing (en français)', e: '🐰', lang: 'fr', th: ['french', 'cozy'], a: [2, 5], p: 1, m: 7,
     l: { telequebec: 'https://telequebec.tv/regarder/bing/1/1' },
     why: 'Bing in French.' },
-  { id: 'patpatrouille', t: "La Pat' Patrouille", e: '🐾', lang: 'fr', th: ['french'], a: [3, 6], p: 3, m: 22,
+  { id: 'patpatrouille', q: 'PAW Patrol', t: "La Pat' Patrouille", e: '🐾', lang: 'fr', th: ['french'], a: [3, 6], p: 3, m: 22,
     l: { telequebec: 'https://telequebec.tv/regarder/la-patpatrouille/1/1' },
     why: 'PAW Patrol in French.', note: 'Fast and toy-driven.' },
-  { id: 'octonautes', t: 'Les Octonautes', e: '🐙', lang: 'fr', th: ['french', 'nature'], a: [3, 7], p: 2, m: 14,
-    l: { prime: 'https://www.primevideo.com/detail?gti=amzn1.dv.gti.67cb2c90-cf98-4f58-a053-ba1341ac3691' },
+  { id: 'octonautes', q: 'Octonauts', t: 'Les Octonautes', e: '🐙', lang: 'fr', th: ['french', 'nature'], a: [3, 7], p: 2, m: 14,
+    l: { prime: 'https://app.primevideo.com/detail?gti=amzn1.dv.gti.67cb2c90-cf98-4f58-a053-ba1341ac3691' },
     why: 'Octonauts with French audio.' },
-  { id: 'toupie-binou', t: 'Toupie et Binou', e: '🐭', lang: 'fr', th: ['french', 'cozy'], a: [2, 6], p: 2, m: 12,
+  { id: 'toupie-binou', q: 'Toopy and Binoo', t: 'Toupie et Binou', e: '🐭', lang: 'fr', th: ['french', 'cozy'], a: [2, 6], p: 2, m: 12,
     l: { tfo: 'https://www.tfo.org/serie/toupie-et-binou/003260672' },
     why: 'Gentle imaginary adventures, in Canadian French.' },
   { id: 'monde-ze', t: 'Le Monde de Zé', e: '🌲', lang: 'fr', th: ['french', 'feelings'], a: [3, 6], p: 1, m: 10,
     l: { tfo: 'https://www.tfo.org/serie/le-monde-de-ze/003340162' },
     why: 'A tender forest story about exploring and handling emotions.' },
-  { id: 'bus-magique', t: 'Le bus magique', e: '🚌', lang: 'fr', th: ['french', 'curious'], a: [5, 8], p: 2, m: 25,
+  { id: 'bus-magique', q: 'The Magic School Bus', t: 'Le bus magique', e: '🚌', lang: 'fr', th: ['french', 'curious'], a: [5, 8], p: 2, m: 25,
     l: { tfo: 'https://www.tfo.org/serie/le-bus-magique/000199791' },
     why: 'The original Magic School Bus, in French.' },
   { id: 'camp-kazoo', t: 'Camp Kazoo', e: '🎪', lang: 'fr', th: ['french', 'feelings'], a: [5, 8], p: 2, m: 11,
@@ -523,12 +531,12 @@ function dayKey(d) { return d.getFullYear() + '-' + String(d.getMonth() + 1).pad
 function dayNumber(d) { return Math.round(new Date(d.getFullYear(), d.getMonth(), d.getDate(), 12).getTime() / 86400000); }
 
 function defaultKid(id, name, emoji, age) {
-  return { id, name, emoji, age, minutes: 60, maxPace: 2, mech: 'rotate', dealer: 1,
+  return { id, name, emoji, age, minutes: 60, maxPace: 2, mech: 'rotate', dealer: 1, respins: 1,
     themes: Object.fromEntries(THEME_KEYS.map(k => [k, true])) };
 }
 function defaultSettings() {
   return {
-    v: 1, lang: 'en', voice: true, sound: true, linkMode: 'blank', youtube: 'app',
+    v: 1, lang: 'en', voice: true, sound: true, linkMode: 'blank', youtube: 'app', tmdbKey: '',
     platforms: Object.fromEntries(PLATFORM_ORDER.map(k => [k, !!PLATFORMS[k].def])),
     kids: [defaultKid('k1', 'Kid 1', '🦊', 6), defaultKid('k2', 'Kid 2', '🐻', 4)],
     snack: { on: true, drink: true,
@@ -547,6 +555,7 @@ function mergeSettings(saved) {
   s.snack.snacks = Object.assign(d.snack.snacks, sn.snacks || {});
   s.snack.drinks = Object.assign(d.snack.drinks, sn.drinks || {});
   s.hidden = (saved.hidden && typeof saved.hidden === 'object') ? saved.hidden : {};
+  s.tmdbKey = typeof saved.tmdbKey === 'string' ? saved.tmdbKey : '';
   s.custom = Array.isArray(saved.custom) ? saved.custom.filter(c => c && c.id && c.t && c.l && c.th && c.a) : [];
   const kids = Array.isArray(saved.kids) && saved.kids.length ? saved.kids.slice(0, 4) : d.kids;
   s.kids = kids.map((k, i) => {
@@ -554,6 +563,7 @@ function mergeSettings(saved) {
     const out = Object.assign(base, k);
     out.age = Number(out.age) || 5; out.minutes = Number(out.minutes) || 60;
     out.maxPace = Number(out.maxPace) || 2; out.dealer = Number.isFinite(Number(out.dealer)) ? Number(out.dealer) : 1;
+    out.respins = Number.isFinite(Number(out.respins)) ? Number(out.respins) : 1;
     out.themes = Object.assign(Object.fromEntries(THEME_KEYS.map(t => [t, true])), k.themes || {});
     return out;
   });
@@ -616,7 +626,7 @@ function mechanicFor(kid, kidIdx, date, spins) {
   return MECHS[((n % MECHS.length) + MECHS.length) % MECHS.length];
 }
 function newDayState(date, history) {
-  return { date: dayKey(date), used: 0, spins: 0, bonusLeft: 0, bonusAt: 0, pick: null, pending: null, snack: null, history: history || [] };
+  return { date: dayKey(date), used: 0, spins: 0, respins: 0, bonusLeft: 0, bonusAt: 0, pick: null, pending: null, snack: null, history: history || [] };
 }
 function spinStatus(kid, s, now) {
   now = now || Date.now();
@@ -684,7 +694,7 @@ const T = {
     spin: 'SPIN', turn: 'Turn it!', tapWheel: 'Tap the wheel to spin it',
     enjoy: 'Enjoy your show!', openAgain: 'Open my show again',
     bonusIn: m => `Bonus spin in ${m} min`, done: 'All done for today!', next: 'What next?',
-    youGot: 'You got', pickOne: 'Pick one!', pickOneSay: 'Pick a show!',
+    youGot: 'You got', pickOne: 'Pick one!', pickOneSay: 'Pick a show!', pickMine: 'Pick my show', respin: n => `Spin again (${n} left)`,
     watchN: (n, vid) => vid ? (n === 1 ? 'Watch 1 video' : `Watch ${n} videos`) : (n === 1 ? 'Watch 1 episode' : `Watch ${n} episodes`),
     about: m => `about ${m} min`, on: p => `on ${p}`, letsWatch: "Let's watch!",
     bonusAfter: 'Short show! Bonus spin after', snack: 'Snack spin', ok: 'Yum!', noSnacks: 'No snacks are turned on.',
@@ -699,7 +709,7 @@ const T = {
     spin: 'GO!', turn: 'Tourne!', tapWheel: 'Touche la roue pour la faire tourner',
     enjoy: 'Bon visionnement!', openAgain: 'Rouvrir mon émission',
     bonusIn: m => `Tour bonus dans ${m} min`, done: "C'est fini pour aujourd'hui!", next: 'Et maintenant?',
-    youGot: 'Tu as eu', pickOne: 'Choisis!', pickOneSay: 'Choisis une émission!',
+    youGot: 'Tu as eu', pickOne: 'Choisis!', pickOneSay: 'Choisis une émission!', pickMine: 'Choisir mon émission', respin: n => `Rejouer (encore ${n})`,
     watchN: (n, vid) => vid ? (n === 1 ? 'Regarde 1 vidéo' : `Regarde ${n} vidéos`) : (n === 1 ? 'Regarde 1 épisode' : `Regarde ${n} épisodes`),
     about: m => `environ ${m} min`, on: p => `sur ${p}`, letsWatch: 'On regarde!',
     bonusAfter: 'Émission courte! Tour bonus après', snack: 'Collation surprise', ok: 'Miam!', noSnacks: 'Aucune collation activée.',
@@ -789,10 +799,10 @@ function render() {
   if (['home', 'pick', 'dealer', 'spin'].includes(ui.screen)) {
     const kid = curKid();
     if (!kid) ui.screen = 'who';
-    else if (ui.screen !== 'spin') {
+    else if (ui.screen === 'pick' || ui.screen === 'dealer') {
       const s = loadState(kid.id);
-      if (s.pending) ui.screen = s.pending.theme === 'dealer' ? 'dealer' : 'pick';
-      else if (ui.screen !== 'home') ui.screen = 'home';
+      if (!s.pending) ui.screen = 'home';
+      else ui.screen = s.pending.theme === 'dealer' ? 'dealer' : 'pick';
     }
   }
   const app = $('#app');
@@ -801,6 +811,11 @@ function render() {
 }
 
 /* ---------- kid screens ---------- */
+const backBtn = () => `<button class="iconbtn" data-act="home" aria-label="Back">←</button>`;
+function respinBtn(kid, s) {
+  const left = (Number(kid.respins) || 0) - (s.respins || 0);
+  return left > 0 ? `<button class="btn small" data-act="respin">🔄 ${L().respin(left)}</button>` : '';
+}
 function topbar(left) {
   return `<div class="topbar">${left || '<span></span>'}<button class="iconbtn" data-act="parent" aria-label="Grown-ups">⚙️</button></div>`;
 }
@@ -830,8 +845,13 @@ function againButton(s) {
 function viewHome() {
   const kid = curKid(); const l = L(); const s = loadState(kid.id); const st = spinStatus(kid, s);
   let body;
-  if (st.kind === 'ready') {
-    const mech = mechanicFor(kid, kidIdx(kid.id), new Date(), s.spins);
+  if (st.kind === 'pending') {
+    const p = s.pending, th = THEMES[p.theme];
+    body = `<div class="hero"><div class="status">
+      <div class="s-emoji">${th.emoji}</div><div class="s-title">${l.youGot} ${esc(themeName(p.theme))}!</div>
+      <button class="btn go big" data-act="resume">${p.theme === 'dealer' ? l.yourPick : l.pickMine}</button></div>${tvBar(kid, s)}</div>`;
+  } else if (st.kind === 'ready') {
+    const mech = mechanicFor(kid, kidIdx(kid.id), new Date(), s.spins + (s.respins || 0));
     const icon = { wheel: '🎡', gumball: '🍬', cards: '🃏' }[mech];
     body = `<div class="hero">
       <h1 class="hello">${st.bonus ? l.bonusTitle : l.hi(esc(kid.name))}</h1>
@@ -842,7 +862,7 @@ function viewHome() {
     const snackBtn = (S.snack.on && !s.snack && st.kind === 'waiting') ? `<button class="btn" data-act="snack">🍿 ${l.snack}</button>` : '';
     if (st.kind === 'waiting') {
       body = `<div class="hero"><div class="status">
-        <div class="s-emoji">${sh ? sh.e : '🎲'}</div><div class="s-title">${sh ? esc(titleOf(sh)) : l.yourPick}</div>
+        ${heroArt(sh)}<div class="s-title">${sh ? esc(titleOf(sh)) : l.yourPick}</div>
         <div class="s-sub">${l.enjoy}</div>${againButton(s)}${snackBtn}
         <div class="bonus">🎁 ${l.bonusIn(Math.max(1, Math.ceil(st.ms / 60000)))}</div></div>${tvBar(kid, s)}</div>`;
     } else {
@@ -860,7 +880,7 @@ function startSpin() {
   if (st.kind !== 'ready') return render();
   const opts = themeOptions(kid, S, st.remaining);
   if (!opts.length) { toast(L().nothing); return; }
-  ui.spin = { opts, remaining: st.remaining, bonus: st.bonus, mech: mechanicFor(kid, kidIdx(kid.id), new Date(), s.spins) };
+  ui.spin = { opts, remaining: st.remaining, bonus: st.bonus, mech: mechanicFor(kid, kidIdx(kid.id), new Date(), s.spins + (s.respins || 0)) };
   ui.spinning = false;
   say(L()[ui.spin.mech]);
   go('spin');
@@ -990,7 +1010,7 @@ function viewPick() {
   const cards = shows.map(sh => {
     const lk = linkFor(sh, S), pl = PLATFORMS[lk.platform];
     return `<button class="show ${sel && sel.id === sh.id ? 'on' : ''}" data-act="pickShow" data-id="${sh.id}" style="--c:${th.color}">
-      <span class="s-em">${sh.e}</span><span class="s-t">${esc(titleOf(sh))}</span>
+      ${artBox(sh)}<span class="s-t">${esc(titleOf(sh))}</span>
       <span class="s-meta"><span class="pill" style="background:${pl.color}">${esc(pl.name)}</span>${l.about(sh.m)}</span></button>`;
   }).join('');
   let panel = '';
@@ -1003,9 +1023,9 @@ function viewPick() {
       ${d.bonus ? `<div class="bonus">🎁 ${l.bonusAfter}</div>` : ''}
       <div class="dose-actions">${watchButton(sel, lk)}${snackBtn}</div></div>`;
   }
-  return `<div class="screen">${topbar(meButton(kid))}
+  return `<div class="screen">${topbar(backBtn())}
     <div class="pickhead"><span class="chip-emoji" style="--c:${th.color}">${th.emoji}</span>${esc(themeName(p.theme))} · ${l.pickOne}</div>
-    <div class="shows">${cards}</div>${panel}</div>`;
+    <div class="shows">${cards}</div>${respinBtn(kid, s)}${panel}</div>`;
 }
 
 /* dealer's choice */
@@ -1013,8 +1033,8 @@ function viewDealer() {
   const kid = curKid(); const s = loadState(kid.id); const p = s.pending; const l = L();
   const plats = PLATFORM_ORDER.filter(k => S.platforms[k]);
   if (!plats.length) { s.pending = null; saveState(kid.id, s); ui.screen = 'home'; return viewHome(); }
-  return `<div class="screen">${topbar(meButton(kid))}
-    <div class="hero"><div class="r-emoji">🎲</div><h1 class="hello">${l.yourPick}</h1><p class="sub">${l.yourPickSub(p.remaining)}</p>
+  return `<div class="screen">${topbar(backBtn())}
+    <div class="hero"><div class="r-emoji">🎲</div><h1 class="hello">${l.yourPick}</h1><p class="sub">${l.yourPickSub(p.remaining)}</p>${respinBtn(kid, s)}
       <div class="plats">${plats.map(k => `<a class="plat" href="${esc(PLATFORMS[k].home)}" ${tgt()} rel="noopener" data-act="dealerGo" data-p="${k}" style="--c:${PLATFORMS[k].color}">${esc(PLATFORMS[k].name)}</a>`).join('')}</div>
     </div></div>`;
 }
@@ -1057,6 +1077,57 @@ function openPlayer(sh) {
     <div class="frame"><iframe src="${src}" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen title="${esc(sh.t)}"></iframe></div></div>`, 'playerwrap');
 }
 
+/* ---------- show pictures (TMDB, needs a free key from themoviedb.org) ---------- */
+const K_ART = 'popcorn.art';
+let ART = store.get(K_ART, {}) || {};
+const artQueue = new Set(); let artBusy = false;
+function artFor(sh) {
+  if (!S.tmdbKey || !sh || ui.artErr) return '';
+  const ks = Object.keys(sh.l || {});
+  if (ks.length === 1 && ks[0] === 'youtube') return '';          // YouTube channels aren't on TMDB
+  if (sh.id in ART) return ART[sh.id];
+  artQueue.add(sh.id); setTimeout(pumpArt, 0); return '';
+}
+function artBox(sh) {
+  const a = artFor(sh);
+  return a ? `<span class="s-em has-art" style="background-image:url('${esc(a)}')"><i>${sh.e}</i></span>` : `<span class="s-em">${sh.e}</span>`;
+}
+function heroArt(sh) {
+  const a = sh ? artFor(sh) : '';
+  return a ? `<div class="s-art" style="background-image:url('${esc(a)}')"></div>` : `<div class="s-emoji">${sh ? sh.e : '🎲'}</div>`;
+}
+async function lookupArt(sh) {
+  const key = S.tmdbKey.trim(), bearer = key.startsWith('eyJ');
+  const query = sh.q || sh.t.replace(/\s*\(.*?\)\s*/g, '').trim();
+  const url = `https://api.themoviedb.org/3/search/${sh.kind === 'movie' ? 'movie' : 'tv'}?query=${encodeURIComponent(query)}&language=${sh.lang === 'fr' && !sh.q ? 'fr-CA' : 'en-CA'}&include_adult=false`
+    + (bearer ? '' : `&api_key=${encodeURIComponent(key)}`);
+  const r = await fetch(url, bearer ? { headers: { Authorization: 'Bearer ' + key, accept: 'application/json' } } : {});
+  if (!r.ok) { const e = new Error('tmdb ' + r.status); e.status = r.status; throw e; }
+  const res = ((await r.json()).results || []);
+  const norm = s => String(s || '').toLowerCase().normalize('NFD').replace(/[^a-z0-9]/g, '');
+  const best = res.find(x => [x.name, x.title, x.original_name, x.original_title].some(n => norm(n) === norm(query))) || res[0];
+  const path = best && (best.backdrop_path || best.poster_path);
+  return path ? 'https://image.tmdb.org/t/p/w780' + path : '';
+}
+async function pumpArt() {
+  if (artBusy || typeof fetch !== 'function') return; artBusy = true; let changed = false;
+  while (artQueue.size) {
+    const id = artQueue.values().next().value; artQueue.delete(id);
+    const sh = showById(id, S); if (!sh || id in ART) continue;
+    try { ART[id] = await lookupArt(sh); changed = true; }
+    catch (e) {
+      if (e.status === 401 || e.status === 403) { ui.artErr = true; artQueue.clear(); toast("That TMDB key didn't work"); break; }
+      if (e.status === 429) { artQueue.add(id); await new Promise(r => setTimeout(r, 1500)); continue; }
+      ART[id] = ''; changed = true;
+    }
+    store.set(K_ART, ART);
+  }
+  artBusy = false;
+  if (!changed || $('#layer').children.length) return;
+  if (['pick', 'home'].includes(ui.screen)) render();
+  else if (ui.screen === 'settings') refreshShowList();
+}
+
 /* ---------- grown-up PIN ---------- */
 function hashPin(p) { let h = 5381; for (const c of 'popcorn:' + p) h = ((h << 5) + h + c.charCodeAt(0)) >>> 0; return h.toString(36); }
 function viewPin() {
@@ -1096,8 +1167,8 @@ function kidSettings(k, i) {
     <div class="row"><label>Pace</label><select data-set="${p}maxPace" data-type="num">${opts([[1, 'Calm shows only'], [2, 'Calm and medium'], [3, 'Anything, including busy']], k.maxPace)}</select></div>
     <div class="row"><label>Spinner</label><select data-set="${p}mech">${opts([['rotate', 'Mix it up every day'], ['wheel', 'Always the wheel'], ['gumball', 'Always the gumball machine'], ['cards', 'Always the cards']], k.mech)}</select></div>
     <div class="row"><label>Dealer's choice (they pick anything)</label><select data-set="${p}dealer" data-type="num">${opts([[0, 'Off'], [1, 'Small slice'], [2, 'Normal slice'], [3, 'Big slice']], k.dealer)}</select></div>
+    <div class="row"><label>Spin again if they don't like the 3 choices</label><select data-set="${p}respins" data-type="num">${opts([[0, 'No'], [1, 'Once a day'], [2, 'Twice a day']], k.respins)}</select></div>
     <div class="row col"><label>Themes on the spinner</label><div class="chips">${THEME_KEYS.map(t => `<label class="chip ${k.themes[t] ? 'on' : ''}"><input type="checkbox" hidden data-set="${p}themes.${t}" ${k.themes[t] ? 'checked' : ''}>${THEMES[t].emoji} ${THEMES[t].en}</label>`).join('')}</div></div>
-    <div class="row"><span class="small">Today: ${todaySummary(k)}</span><button class="btn small" data-act="resetToday" data-id="${k.id}">Reset today</button></div>
     ${S.kids.length > 1 ? `<div class="row"><span></span><button class="btn small danger" data-act="removeKid" data-i="${i}">Remove ${esc(k.name)}</button></div>` : ''}
   </section>`;
 }
@@ -1105,7 +1176,8 @@ function showRow(sh) {
   const on = !S.hidden[sh.id];
   const plats = Object.keys(sh.l).map(k => `<span class="${S.platforms[k] ? 'on' : 'off'}">${esc(PLATFORMS[k] ? PLATFORMS[k].name : k)}</span>`).join(' · ');
   const ok = S.kids.map(k => eligible(sh, k, S) ? `<span class="ok">✓ ${esc(k.name)}</span>` : '').join('');
-  return `<div class="showrow"><div class="se">${sh.e}</div><div>
+  const pic = artFor(sh);
+  return `<div class="showrow"><div class="se">${pic ? `<img src="${esc(pic)}" alt="" loading="lazy">` : sh.e}</div><div>
       <div class="st">${esc(sh.t)}${sh.custom ? ' <span class="small">(added by you)</span>' : ''}</div>
       <div class="small plats-inline">${plats} · ages ${sh.a[0]}-${sh.a[1]} · ${PACE[sh.p]} · about ${sh.m} min · ${sh.th.map(t => THEMES[t] ? THEMES[t].emoji : '').join('')}</div>
       <div class="small why">${esc(sh.why || '')}${sh.note ? ` <em>${esc(sh.note)}</em>` : ''}</div>
@@ -1119,46 +1191,58 @@ function showListHTML() {
   return list.map(showRow).join('') || '<p class="small">No shows match that search.</p>';
 }
 function refreshShowList() { const el = $('#showlist'); if (el) el.innerHTML = showListHTML(); }
+const SET_TABS = [['today', 'Today'], ['kids', 'Kids'], ['services', 'Services'], ['shows', 'Shows'], ['extras', 'Snacks & sound'], ['share', 'Share & PIN']];
 function viewSettings() {
+  const tab = ui.setTab || 'today';
+  const tabs = `<div class="tabs" role="tablist">${SET_TABS.map(([k, t]) => `<button class="tab ${tab === k ? 'on' : ''}" role="tab" data-act="setTab" data-t="${k}">${t}</button>`).join('')}</div>`;
+  const body = ({ today: setToday, kids: setKids, services: setServices, shows: setShows, extras: setExtras, share: setShare }[tab] || setToday)();
+  return `<div class="screen">
+  <div class="topbar settings-top"><button class="btn small go" data-act="exitSettings">Done</button><strong>Grown-up settings</strong><span class="small">v${VERSION}</span></div>
+  ${tabs}<div class="settings">${body}</div></div>`;
+}
+function setToday() {
   const dev = store.get(K_DEV, null);
-  const age = [2, 3, 4, 5, 6, 7, 8, 9, 10].map(a => [a, a]);
+  return `<section class="sec"><h2>Today</h2>
+    ${S.kids.map(k => `<div class="row"><span>${k.emoji} <strong>${esc(k.name)}</strong><br><span class="small">${todaySummary(k)}</span></span><button class="btn small" data-act="resetToday" data-id="${k.id}">Reset today</button></div>`).join('')}
+    <div class="row"><span class="small">A fresh start: new spin, full time, snack spin back.</span><button class="btn small" data-act="resetAll">Reset everyone</button></div>
+  </section>
+  <section class="sec"><h2>This iPad</h2>
+    <div class="row"><label for="dev">Who uses this iPad?</label><select id="dev" data-device="1"><option value="">Ask each time</option>${S.kids.map(k => `<option value="${k.id}" ${dev === k.id ? 'selected' : ''}>${esc(k.name)}</option>`).join('')}</select></div>
+    <p class="small">Pick a kid so this iPad always opens their spinner, and nobody borrows a sibling's spin. Set this on each iPad.</p>
+  </section>`;
+}
+function setKids() {
+  return `${S.kids.map(kidSettings).join('')}
+    <div class="row-btns"><button class="btn small" data-act="addKid" ${S.kids.length >= 4 ? 'disabled' : ''}>+ Add a kid</button></div>`;
+}
+function setServices() {
   const platRows = PLATFORM_ORDER.map(k => {
     const pl = PLATFORMS[k], n = SHOWS.filter(s => s.l[k]).length;
     return `<div class="row"><label><span class="pill" style="background:${pl.color}">${esc(pl.name)}</span> <span class="small">${n} shows${pl.note ? ' · ' + esc(pl.note) : ''}</span></label>
       <input type="checkbox" class="tog" data-set="platforms.${k}" ${S.platforms[k] ? 'checked' : ''} aria-label="${esc(pl.name)}"></div>`;
   }).join('');
-  const chipSet = (map, path, state) => Object.keys(map).map(k => `<label class="chip ${state[k] ? 'on' : ''}"><input type="checkbox" hidden data-set="${path}.${k}" ${state[k] ? 'checked' : ''}>${map[k].e} ${map[k].en}</label>`).join('');
-  return `<div class="screen">
-  <div class="topbar settings-top"><button class="btn small go" data-act="exitSettings">Done</button><strong>Grown-up settings</strong><span class="small">v${VERSION}</span></div>
-  <div class="settings">
-    <section class="sec"><h2>This iPad</h2>
-      <div class="row"><label for="dev">Who uses this iPad?</label><select id="dev" data-device="1"><option value="">Ask each time</option>${S.kids.map(k => `<option value="${k.id}" ${dev === k.id ? 'selected' : ''}>${esc(k.name)}</option>`).join('')}</select></div>
-      <p class="small">Pick a kid so this iPad always opens their spinner, and nobody borrows a sibling's spin. Set this on each iPad.</p>
-    </section>
-    ${S.kids.map(kidSettings).join('')}
-    <div class="row-btns"><button class="btn small" data-act="addKid" ${S.kids.length >= 4 ? 'disabled' : ''}>+ Add a kid</button></div>
-    <section class="sec"><h2>Streaming services</h2><p class="small">Only shows on the services you turn on can land.</p>${platRows}</section>
+  return `<section class="sec"><h2>Streaming services</h2><p class="small">Only shows on the services you turn on can land.</p>${platRows}</section>
     <section class="sec"><h2>Opening shows</h2>
-      <div class="row"><label>Open shows in</label><select data-set="linkMode">${opts([['blank', 'A new tab (try first)'], ['self', 'The same tab']], S.linkMode)}</select></div>
+      <div class="row"><label>Open shows in</label><select data-set="linkMode">${opts([['blank', 'A new tab (works best)'], ['self', 'The same tab']], S.linkMode)}</select></div>
       <div class="row"><label>YouTube picks</label><select data-set="youtube">${opts([['app', 'Open the YouTube app'], ['inside', 'Play inside Popcorn (test first)']], S.youtube)}</select></div>
-      <p class="small">Not sure which works best? Run the <a class="link" href="linktest.html">link test</a> on each iPad.</p>
-    </section>
-    <section class="sec"><h2>Snack spin</h2>
-      <div class="row"><label>Snack spin after picking a show</label><input type="checkbox" class="tog" data-set="snack.on" ${S.snack.on ? 'checked' : ''}></div>
-      <div class="row"><label>Add a drink reel</label><input type="checkbox" class="tog" data-set="snack.drink" ${S.snack.drink ? 'checked' : ''}></div>
-      <div class="row col"><label>Snacks</label><div class="chips">${chipSet(SNACKS, 'snack.snacks', S.snack.snacks)}</div></div>
-      <div class="row col"><label>Drinks</label><div class="chips">${chipSet(DRINKS, 'snack.drinks', S.snack.drinks)}</div></div>
-    </section>
-    <section class="sec"><h2>Language and sound</h2>
-      <div class="row"><label>Kids' screens in</label><select data-set="lang">${opts([['en', 'English'], ['fr', 'Français']], S.lang)}</select></div>
-      <div class="row"><label>Read things out loud</label><input type="checkbox" class="tog" data-set="voice" ${S.voice ? 'checked' : ''}></div>
-      <div class="row"><label>Sound effects</label><input type="checkbox" class="tog" data-set="sound" ${S.sound ? 'checked' : ''}></div>
+      <p class="small">Télé-Québec and TFO play in Safari; the others open their apps. Re-run the <a class="link" href="linktest.html">link test</a> anytime.</p>
+    </section>`;
+}
+function setShows() {
+  const age = [2, 3, 4, 5, 6, 7, 8, 9, 10].map(a => [a, a]);
+  const loaded = Object.values(ART).filter(Boolean).length;
+  const artState = !S.tmdbKey ? 'Off' : ui.artErr ? "The key didn't work" : `${loaded} pictures loaded`;
+  return `<section class="sec"><h2>Show pictures</h2>
+      <p class="small">Paste a free TMDB API key to show each show's real artwork on the cards. Get one at <a class="link" href="https://www.themoviedb.org/settings/api" target="_blank" rel="noopener">themoviedb.org</a> (free account, personal use). YouTube channels keep their emoji.</p>
+      <div class="row wrap"><input type="text" placeholder="TMDB API key or read access token" value="${esc(S.tmdbKey)}" data-set="tmdbKey" autocomplete="off" autocapitalize="off" spellcheck="false"><button class="btn small" data-act="refreshArt" ${S.tmdbKey ? '' : 'disabled'}>Reload pictures</button></div>
+      <p class="small">Status: ${artState}. This product uses the TMDB API but is not endorsed or certified by TMDB.</p>
     </section>
     <section class="sec"><h2>Shows</h2>
       <p class="small">Turn off anything you don't want to land. The notes are a starting point, not a professional review.</p>
       <div class="row"><input type="search" placeholder="Search shows" value="${esc(ui.showQ)}" data-input="showQ" style="flex:1"></div>
       <div class="showlist" id="showlist">${showListHTML()}</div>
-      <h3>Heard about a new show?</h3>
+    </section>
+    <section class="sec"><h2>Heard about a new show?</h2>
       <div class="row wrap"><input type="search" id="jwq" placeholder="Show name"><button class="btn small" data-act="jw">Where can we watch it?</button></div>
       <p class="small">Opens JustWatch for Canada so you can see which app has it. Then add it here, with the link if you have it.</p>
       <div class="grid2">
@@ -1174,19 +1258,44 @@ function viewSettings() {
         <label>Language<select id="af-lang">${opts([['en', 'English'], ['fr', 'French']], 'en')}</select></label>
       </div>
       <div class="row"><span class="small">Without a link, the button opens the app's search, or its home screen.</span><button class="btn small go" data-act="addShow">Add show</button></div>
+    </section>`;
+}
+function setExtras() {
+  const chipSet = (map, path, state) => Object.keys(map).map(k => `<label class="chip ${state[k] ? 'on' : ''}"><input type="checkbox" hidden data-set="${path}.${k}" ${state[k] ? 'checked' : ''}>${map[k].e} ${map[k].en}</label>`).join('');
+  return `<section class="sec"><h2>Snack spin</h2>
+      <div class="row"><label>Snack spin after picking a show</label><input type="checkbox" class="tog" data-set="snack.on" ${S.snack.on ? 'checked' : ''}></div>
+      <div class="row"><label>Add a drink reel</label><input type="checkbox" class="tog" data-set="snack.drink" ${S.snack.drink ? 'checked' : ''}></div>
+      <div class="row col"><label>Snacks</label><div class="chips">${chipSet(SNACKS, 'snack.snacks', S.snack.snacks)}</div></div>
+      <div class="row col"><label>Drinks</label><div class="chips">${chipSet(DRINKS, 'snack.drinks', S.snack.drinks)}</div></div>
     </section>
-    <section class="sec"><h2>Share with the other iPad</h2>
-      <p class="small">Set things up once, then send this link to the other iPad (AirDrop or Messages). Opening it there copies these settings, PIN included. "Who uses this iPad" stays separate on each one.</p>
+    <section class="sec"><h2>Language and sound</h2>
+      <div class="row"><label>Kids' screens in</label><select data-set="lang">${opts([['en', 'English'], ['fr', 'Français']], S.lang)}</select></div>
+      <div class="row"><label>Read things out loud</label><input type="checkbox" class="tog" data-set="voice" ${S.voice ? 'checked' : ''}></div>
+      <div class="row"><label>Sound effects</label><input type="checkbox" class="tog" data-set="sound" ${S.sound ? 'checked' : ''}></div>
+    </section>`;
+}
+function setShare() {
+  return `<section class="sec"><h2>Share with the other iPad</h2>
+      <p class="small">Set things up once, then send this link to the other iPad (AirDrop or Messages). Opening it there copies these settings, PIN and picture key included. "Who uses this iPad" stays separate on each one.</p>
       <div class="row"><span></span><button class="btn small go" data-act="share">Share setup link</button></div>
     </section>
-    <section class="sec"><h2>PIN</h2><div class="row"><span class="small">Change the 4-digit grown-up PIN.</span><button class="btn small" data-act="changePin">Change PIN</button></div></section>
-  </div></div>`;
+    <section class="sec"><h2>PIN</h2><div class="row"><span class="small">Change the 4-digit grown-up PIN.</span><button class="btn small" data-act="changePin">Change PIN</button></div></section>`;
 }
 
 /* ---------- actions ---------- */
 let pendingImport = null;
 const ACTIONS = {
   noop() {},
+  resume() { go('pick'); },
+  respin() {
+    const kid = curKid(); const s = loadState(kid.id);
+    if (!s.pending || (s.respins || 0) >= (Number(kid.respins) || 0)) return;
+    s.respins = (s.respins || 0) + 1; s.pending = null; saveState(kid.id, s); ui.sel = null;
+    startSpin(); if (ui.screen !== 'spin') go('home');
+  },
+  setTab(el) { ui.setTab = el.dataset.t; render(); window.scrollTo(0, 0); },
+  resetAll() { S.kids.forEach(k => { const s = loadState(k.id); saveState(k.id, newDayState(new Date(), s.history)); }); toast('Fresh start for everyone'); keepScroll(); },
+  refreshArt() { ART = {}; store.set(K_ART, ART); ui.artErr = false; allShows(S).forEach(artFor); toast('Loading pictures'); keepScroll(); },
   who() { go('who'); },
   kid(el) { openKid(el.dataset.id); say(L().hi(S.kids.find(k => k.id === el.dataset.id).name)); },
   home() { if (!ui.spinning) { ui.spin = null; go('home'); } },
@@ -1317,7 +1426,9 @@ document.addEventListener('change', e => {
   let v = el.type === 'checkbox' ? el.checked : el.value;
   if (el.dataset.type === 'num') v = Number(v);
   if (el.dataset.set.endsWith('.name')) v = String(v).trim() || 'Kid';
-  setPath(S, el.dataset.set, v); saveSettings(); keepScroll();
+  setPath(S, el.dataset.set, v); saveSettings();
+  if (el.dataset.set === 'tmdbKey') { ART = {}; store.set(K_ART, ART); ui.artErr = false; allShows(S).forEach(artFor); }
+  keepScroll();
 });
 document.addEventListener('input', e => { if (e.target.dataset.input === 'showQ') { ui.showQ = e.target.value; refreshShowList(); } });
 document.addEventListener('visibilitychange', () => { if (!document.hidden && ['home', 'who'].includes(ui.screen)) render(); });
