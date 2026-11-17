@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Link test">
+<meta name="robots" content="noindex,nofollow">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<title>Popcorn link test</title>
+<style>
+:root{--bg:#1E1B4B; --card:#2A2766; --deep:#16133A; --ink:#FFF8F0; --ink2:#C9C5F2; --gold:#FFD166; --line:rgba(255,255,255,.12);
+  font-family: ui-rounded, "SF Pro Rounded", system-ui, -apple-system, "Segoe UI", sans-serif;}
+*{box-sizing:border-box;}
+body{margin:0; background:var(--bg); color:var(--ink); padding:calc(16px + env(safe-area-inset-top)) 16px calc(32px + env(safe-area-inset-bottom));}
+main{max-width:860px; margin:0 auto; display:flex; flex-direction:column; gap:14px;}
+h1{margin:0; font-size:30px;}
+.mode{display:inline-block; padding:6px 14px; border-radius:999px; background:var(--gold); color:#3B2600; font-weight:800;}
+.card{background:var(--card); border-radius:20px; padding:16px;}
+.card h2{margin:0 0 6px; font-size:21px;}
+ol{margin:6px 0 0; padding-left:22px; line-height:1.55; font-size:17px;}
+.row{border-top:1px solid var(--line); padding:12px 0; display:flex; flex-direction:column; gap:10px;}
+.row:first-of-type{border-top:0;}
+.top{display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;}
+.label{font-size:17px; font-weight:700;}
+.label small{display:block; font-weight:400; color:var(--ink2); font-size:13px; word-break:break-all;}
+a.go, button{font:inherit; border:0; cursor:pointer; text-decoration:none;}
+a.go, .load{display:inline-flex; align-items:center; padding:10px 18px; border-radius:999px; background:var(--gold); color:#3B2600; font-weight:800; font-size:17px;}
+.res{display:flex; gap:8px; flex-wrap:wrap;}
+.res button{padding:8px 12px; border-radius:12px; background:var(--deep); color:var(--ink); font-size:15px; border:2px solid transparent;}
+.res button.on{border-color:var(--gold); background:#3a2f12;}
+.frame{position:relative; aspect-ratio:16/9; background:#000; border-radius:12px; overflow:hidden;}
+.frame iframe{position:absolute; inset:0; width:100%; height:100%; border:0;}
+textarea{width:100%; min-height:200px; border-radius:12px; background:var(--deep); color:var(--ink); border:1px solid var(--line); padding:12px; font:14px ui-monospace, Menlo, monospace;}
+.actions{display:flex; gap:10px; flex-wrap:wrap;}
+.actions button{padding:12px 18px; border-radius:999px; background:var(--gold); color:#3B2600; font-weight:800; font-size:17px;}
+.actions button.sec{background:var(--deep); color:var(--ink);}
+.small{color:var(--ink2); font-size:14px;}
+</style>
+</head>
+<body>
+<main>
+  <h1>🍿 Popcorn link test</h1>
+  <div>Running as: <span class="mode" id="mode"></span></div>
+  <section class="card">
+    <h2>How to run it (about 10 minutes)</h2>
+    <ol>
+      <li>Open this page on one of the kids' iPads, signed in to your streaming apps.</li>
+      <li>Tap each yellow button. When you come back here, tap what happened.</li>
+      <li>Then tap Share, then "Add to Home Screen", open the new icon, and run the list again. It keeps both runs separately.</li>
+      <li>Tap "Copy results" and paste them to Claude.</li>
+    </ol>
+    <p class="small">Some "App link" buttons may show a "Cannot open page" message. That's a result too: tap ❌.</p>
+  </section>
+  <div id="groups"></div>
+  <section class="card">
+    <h2>Results</h2>
+    <div class="actions"><button id="copy">Copy results</button><button class="sec" id="clear">Clear this run</button></div>
+    <p class="small">If copying doesn't work, select the text below and copy it.</p>
+    <textarea id="summary" readonly></textarea>
+  </section>
+</main>
+<script>
+'use strict';
+const ROWS = [
+  { g: 'Netflix', id: 'nf-show', label: 'Show page: Puffin Rock', url: 'https://www.netflix.com/title/80044965', target: '_blank' },
+  { g: 'Netflix', id: 'nf-same', label: 'Show page, same tab', url: 'https://www.netflix.com/title/80044965', target: '_self' },
+  { g: 'Netflix', id: 'nf-search', label: 'Search: Puffin Rock', url: 'https://www.netflix.com/search?q=Puffin%20Rock', target: '_blank' },
+  { g: 'Netflix', id: 'nf-scheme', label: 'App link (nflx://)', url: 'nflx://www.netflix.com/title/80044965', target: '_self' },
+  { g: 'Netflix', id: 'nf-home', label: 'App home', url: 'https://www.netflix.com/', target: '_blank' },
+  { g: 'Prime Video', id: 'pv-show', label: 'Show page: Daniel Tiger', url: 'https://www.primevideo.com/detail?gti=amzn1.dv.gti.52ba1149-9ea4-f71a-d587-0884888a1dd8', target: '_blank' },
+  { g: 'Prime Video', id: 'pv-app', label: 'Show page, app.primevideo.com version', url: 'https://app.primevideo.com/detail?gti=amzn1.dv.gti.52ba1149-9ea4-f71a-d587-0884888a1dd8', target: '_blank' },
+  { g: 'Prime Video', id: 'pv-scheme', label: 'App link (aiv://)', url: 'aiv://', target: '_self' },
+  { g: 'Prime Video', id: 'pv-home', label: 'App home', url: 'https://www.primevideo.com/', target: '_blank' },
+  { g: 'Disney+', id: 'dp-show', label: 'Show page: Bluey', url: 'https://www.disneyplus.com/browse/entity-deb3781c-9bfe-43a8-b82d-4b3d6b0a9cae', target: '_blank' },
+  { g: 'Disney+', id: 'dp-scheme', label: 'App link (disneyplus://)', url: 'disneyplus://', target: '_self' },
+  { g: 'Disney+', id: 'dp-home', label: 'App home', url: 'https://www.disneyplus.com/en-ca', target: '_blank' },
+  { g: 'YouTube', id: 'yt-ch', label: 'Channel: Mark Rober', url: 'https://www.youtube.com/@MarkRober', target: '_blank' },
+  { g: 'YouTube', id: 'yt-same', label: 'Channel, same tab', url: 'https://www.youtube.com/@MarkRober', target: '_self' },
+  { g: 'YouTube', id: 'yt-scheme', label: 'App link (youtube://)', url: 'youtube://www.youtube.com/@MarkRober', target: '_self' },
+  { g: 'YouTube', id: 'yt-embed1', label: 'Play inside this page: Sesame Street', embed: 'UUoookXUzPciGrEZEXmh4Jjg' },
+  { g: 'YouTube', id: 'yt-embed2', label: 'Play inside this page: Mark Rober', embed: 'UUY1kMZp36IQSyNx_9h4mpCg' },
+  { g: 'Crave', id: 'cr-ep', label: 'Episode: Wild Kratts', url: 'https://www.crave.ca/en/play/wild-kratts/mom-of-a-croc-s1e1-3097141', target: '_blank' },
+  { g: 'Crave', id: 'cr-home', label: 'App home', url: 'https://www.crave.ca/en', target: '_blank' },
+  { g: 'Télé-Québec', id: 'tq-show', label: 'Passe-Partout', url: 'https://telequebec.tv/regarder/passe-partout/1/1', target: '_blank' },
+  { g: 'Télé-Québec', id: 'tq-home', label: 'Home', url: 'https://www.telequebec.tv/', target: '_blank' },
+  { g: 'Apple TV (only if you have it)', id: 'at-ep', label: 'Episode: Stillwater', url: 'https://tv.apple.com/ca/episode/the-impossible-dream--stuck-in-the-rain/umc.cmc.4vd049hzyyj851hlereabs4cg?playableId=tvs.sbd.4000%3AVZESH0560101&showId=umc.cmc.3czcagetjq31vvbgkkyp1xiao', target: '_blank' },
+  { g: 'Free extras', id: 'tfo', label: 'TFO: Toupie et Binou', url: 'https://www.tfo.org/serie/toupie-et-binou/003260672', target: '_blank' },
+  { g: 'Free extras', id: 'tubi', label: 'Tubi: Franklin and Friends', url: 'https://tubitv.com/series/300023611/franklin-and-friends', target: '_blank' },
+];
+const LINK_RESULTS = [['ok', '✅ Right show, in the app'], ['app', '🟡 App opened, not the show'], ['web', '🌐 Opened a website'], ['no', '❌ Nothing or an error']];
+const EMBED_RESULTS = [['ok', '✅ Plays here'], ['wrong', '🟡 Plays, wrong videos'], ['no', '❌ Error or blank']];
+
+const standalone = window.navigator.standalone === true || (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
+const MODE = standalone ? 'Home Screen app' : 'Safari';
+const KEY = 'popcorn.linktest';
+const MEM = {};
+function load() { try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) { return MEM.v || {}; } }
+function save(v) { MEM.v = v; try { localStorage.setItem(KEY, JSON.stringify(v)); } catch (e) {} }
+let DATA = load(); DATA[MODE] = DATA[MODE] || {};
+
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+document.getElementById('mode').textContent = MODE;
+
+function draw() {
+  const groups = [...new Set(ROWS.map(r => r.g))];
+  document.getElementById('groups').innerHTML = groups.map(g => `<section class="card"><h2>${esc(g)}</h2>${ROWS.filter(r => r.g === g).map(rowHTML).join('')}</section>`).join('');
+  summarize();
+}
+function rowHTML(r) {
+  const cur = DATA[MODE][r.id];
+  const choices = r.embed ? EMBED_RESULTS : LINK_RESULTS;
+  const action = r.embed
+    ? `<button class="load" data-load="${r.id}">Load player</button>`
+    : `<a class="go" href="${esc(r.url)}" ${r.target === '_blank' ? 'target="_blank" rel="noopener"' : ''}>Open</a>`;
+  return `<div class="row" id="row-${r.id}">
+    <div class="top"><div class="label">${esc(r.label)}<small>${esc(r.embed ? 'youtube-nocookie.com embed, list ' + r.embed : r.url)}${r.target === '_self' ? ' (same tab)' : ''}</small></div>${action}</div>
+    <div class="frame-slot"></div>
+    <div class="res">${choices.map(([v, t]) => `<button data-row="${r.id}" data-v="${v}" class="${cur === v ? 'on' : ''}">${t}</button>`).join('')}</div>
+  </div>`;
+}
+function summarize() {
+  const lines = ['Popcorn link test', 'Device: ' + navigator.userAgent, ''];
+  Object.keys(DATA).forEach(mode => {
+    const res = DATA[mode]; if (!Object.keys(res).length) return;
+    lines.push('== ' + mode + ' ==');
+    ROWS.forEach(r => { const v = res[r.id]; const all = r.embed ? EMBED_RESULTS : LINK_RESULTS; const t = v ? all.find(x => x[0] === v)[1] : '(not tested)'; lines.push(`${r.g} | ${r.label}: ${t}`); });
+    lines.push('');
+  });
+  document.getElementById('summary').value = lines.join('\n');
+}
+document.addEventListener('click', e => {
+  const b = e.target.closest('button[data-row]');
+  if (b) { DATA[MODE][b.dataset.row] = b.dataset.v; save(DATA); b.parentElement.querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b)); summarize(); return; }
+  const l = e.target.closest('button[data-load]');
+  if (l) {
+    const r = ROWS.find(x => x.id === l.dataset.load);
+    const slot = document.querySelector('#row-' + r.id + ' .frame-slot');
+    slot.innerHTML = `<div class="frame"><iframe src="https://www.youtube-nocookie.com/embed/videoseries?list=${r.embed}&rel=0&playsinline=1&modestbranding=1" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen title="${esc(r.label)}"></iframe></div>`;
+  }
+});
+document.getElementById('copy').addEventListener('click', async () => {
+  const t = document.getElementById('summary').value;
+  try { await navigator.clipboard.writeText(t); alert('Copied. Paste it to Claude.'); }
+  catch (e) { const ta = document.getElementById('summary'); ta.focus(); ta.select(); alert('Select-all is on. Use Copy from the menu.'); }
+});
+document.getElementById('clear').addEventListener('click', () => { if (confirm('Clear the results for this run (' + MODE + ')?')) { DATA[MODE] = {}; save(DATA); draw(); } });
+draw();
+</script>
+</body>
+</html>
